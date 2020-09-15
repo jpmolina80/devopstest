@@ -1,7 +1,7 @@
 # devopstest
 Deploy a VirtualBox Machine with Ubuntu Bionic64 using vagrant, and run an ansible playbook to deploy Redis, RabbitMQ and MySQL clusters.
 
-# Sources
+## Sources
 
 Ansible roles used from Ansible Galaxy:
  - geerlingguy.pip: installs and configure PIP

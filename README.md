@@ -77,7 +77,7 @@ Some variables can be defined in the file `./ansible/environments/devopstest/gro
       default_user: admin2
       default_pass: admin2
 
-## MySQL DB
+## MySQL DB cluster
 
 This cluster is composed by 2 docker containers:
 

@@ -1,0 +1,38 @@
+language: generic
+sudo: required
+
+services:
+  - docker
+
+env:
+  matrix:
+    - VERSION=2.3
+    - VERSION=2.4
+    - VERSION=2.5
+
+before_install:
+  - sudo apt-get remove docker docker-engine docker.io
+  - sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+  - sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get install docker-ce
+  - sudo service docker restart
+  - sudo pip install --upgrade ansible==${VERSION}
+  - sudo pip install --upgrade jmespath
+
+install:
+  - mkdir -p ci/roles/JohannWeging.docker-compose
+  - cp -r tasks defaults ci/roles/JohannWeging.docker-compose
+  - docker run -d --name=ci-runner -v /var/lib/docker:/var/lib/docker -v /var/run/docker.sock:/var/run/docker.sock johannweging/ci-runner:latest
+
+
+before_script:
+  - docker --version
+  - ansible --version
+
+script:
+  - cd ci
+  - ansible-playbook site.yml
+  - docker inspect ci_ci_1
+

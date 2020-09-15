@@ -1,0 +1,7 @@
+---
+# cluster
+project_directory: "/data/docker/redis"
+redis_docker_tag: "5.0.7"
+redis_server_image: "bitnami/redis:{{ redis_docker_tag }}"
+redis_sentinel_image: "bitnami/redis-sentinel:{{ redis_docker_tag }}"
+redis_cluster_master: "{{ groups['mygroup'][0] }}"

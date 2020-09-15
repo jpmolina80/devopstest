@@ -1,0 +1,13 @@
+---
+
+rabbitmq:
+  default_user: admin2
+  default_pass: admin2
+
+mysql:
+  replication_user: replication
+  replication_pass: replication
+  root_pass: superpassword
+  user: user1
+  pass: password1
+  database: test1

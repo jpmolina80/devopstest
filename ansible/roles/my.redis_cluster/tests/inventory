@@ -1,0 +1,4 @@
+[redis_cluster]
+redis01.example.loc
+redis02.example.loc
+redis03.example.loc

@@ -1,0 +1,5 @@
+---
+- hosts: redis_cluster
+  become: true
+  roles:
+    - { role: ../../redis_cluster }

@@ -1,0 +1,39 @@
+---
+
+#file: devopstest.yml
+
+- hosts: mygroup
+  become: yes
+  gather_facts: yes
+  vars:
+    # PIP
+    pip_package: python3-pip
+    pip_install_packages:
+      - docker
+      - docker-compose
+    # Docker
+    docker_users:
+      - vagrant
+  environment:
+    # RabbitMQ UI
+    RABBITMQ_DEFAULT_USER: "{{ rabbitmq.default_user }}"
+    RABBITMQ_DEFAULT_PASS: "{{ rabbitmq.default_pass }}"
+    # MySQL
+    MYSQL_REPLICATION_USER: "{{ mysql.replication_user }}"
+    MYSQL_REPLICATION_PASSWORD: "{{ mysql.replication_pass }}"
+    MYSQL_ROOT_PASSWORD: "{{ mysql.root_pass }}"
+    MYSQL_USER: "{{ mysql.user }}"
+    MYSQL_PASSWORD: "{{ mysql.pass }}"
+    MYSQL_DATABASE: "{{ mysql.database }}"
+  roles:
+     # Install pip and packages for docker and docker-compose
+     - geerlingguy.pip
+     # Install docker and docker-compose commands
+     - geerlingguy.docker
+     # Deploy Redis cluster
+     - my.redis_cluster
+     # Deploy RabbitMQ cluster
+     - { role: johannweging.docker-compose, docker_compose_project: "{{ playbook_dir | basename }}", docker_compose_file_path: "{{ playbook_dir }}/rabbitmq/docker-compose.yml", docker_compose_pull: false }
+     # Deploy MySQL master/slave cluster
+     - { role: johannweging.docker-compose, docker_compose_project: "{{ playbook_dir | basename }}", docker_compose_file_path: "{{ playbook_dir }}/mysql/docker-compose.yml", docker_compose_pull: false }
+

@@ -1,0 +1,37 @@
+---
+- name: main | create directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0777
+  with_items:
+#    - "{{ project_directory }}/sentinel/conf"
+#    - "{{ project_directory }}/server/conf"
+    - "{{ project_directory }}/server/data"
+
+- name: main | template project
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ project_directory }}/{{ item.dest }}"
+    mode: 0777
+  with_items:
+    - {src: "docker-compose.yml.j2", dest: "docker-compose.yml"}
+
+#- name: main | copy config
+#  template:
+#    src: "{{ item.src }}"
+#    dest: "{{ project_directory }}/{{ item.dest }}"
+#    mode: 0777
+#  with_items:
+#    - {src: "redis.conf.j2", dest: "server/conf/redis.conf"}
+#    - {src: "sentinel.conf.j2", dest: "sentinel/conf/sentinel.conf"}
+
+- name: main | Running service
+  docker_compose:
+    project_src: "{{ project_directory }}"
+    pull: yes
+    scale: redis-sentinel=3
+  register: output
+
+- debug:
+    var: output

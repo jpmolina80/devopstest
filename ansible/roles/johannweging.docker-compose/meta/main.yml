@@ -1,0 +1,18 @@
+galaxy_info:
+  author: github.com/JohannWeging
+  description: Template and run docker compose files.
+
+  license: MIT
+
+  min_ansible_version: 2.3
+
+  platforms:
+    - name: Archlinux
+
+  galaxy_tags:
+    - docker
+    - compose
+    - arch
+    - linux
+    - archlinux
+

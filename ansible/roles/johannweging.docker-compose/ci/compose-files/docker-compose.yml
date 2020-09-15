@@ -1,0 +1,6 @@
+version: "3"
+
+services:
+  ci:
+    image: alpine:latest
+    command: sleep 200

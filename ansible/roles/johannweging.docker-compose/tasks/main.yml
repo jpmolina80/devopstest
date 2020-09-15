@@ -1,0 +1,100 @@
+#- name: install docker-compose
+#  pacman:
+#    name: docker-compose
+#    update_cache: true
+#  become: true
+
+- name: main | create directory
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0777
+  with_items:
+    - "/data"
+    - "/data/mysql"
+    - "/data/rabbitmq"
+
+- name: getting docker info
+  command: docker info --format '{{ "{{" }} json . {{ "}}" }}'
+  register: docker_info
+  become: true
+
+# this solves issues where the graph driver gets unresponsive
+- block:
+    - name: listing graph root content
+      find:
+        paths: "{{ docker_info.stdout | from_json | json_query('DockerRootDir') }}/zfs/graph/"
+        file_type: directory
+      register: graph_driver_dirs
+
+    - name: find mounted graph driver dirs
+      command: findmnt -f -J {{ item.path }}
+      register: findmnt
+      ignore_errors: true
+      with_items: "{{ graph_driver_dirs.files }}"
+
+    - name: cleaning docker graph driver on zfs
+      shell: rmdir {{ item.0.path }}
+      when: item.1|failed
+      with_together:
+        - "{{ graph_driver_dirs.files }}"
+        - "{{ findmnt.results }}"
+
+  when: docker_compose_clean_graph and docker_info.stdout | from_json | json_query('Driver') == 'zfs'
+  become: true
+
+
+- block:
+    - name: create temporary build directory
+      tempfile:
+        state: directory
+      register: tempdir
+      become: true
+
+    - name: copy base dir
+      copy:
+        src: "{{ docker_compose_file_path | dirname }}/"
+        dest: "{{ tempdir.path }}/"
+      become: true
+
+    - name: set docker compose file name
+      set_fact:
+        docker_compose_file_name: "{{ docker_compose_file_path | basename }}"
+
+    - name: template compose file
+      template:
+        src: "{{ docker_compose_file_path }}"
+        dest: "{{ tempdir.path }}/{{ docker_compose_file_name }}"
+        force: true
+      become: true
+
+    - name: pull docker images
+      command: "docker-compose -p {{ docker_compose_project }} -f {{ tempdir.path }}/{{ docker_compose_file_name }} pull"
+      when: docker_compose_pull
+      become: true
+
+    - name: build docker images
+      command: "docker-compose -p {{ docker_compose_project }} -f {{ tempdir.path }}/{{ docker_compose_file_name }} build"
+      when: docker_compose_pull
+      become: true
+
+    - name: "docker compose up"
+      command: "docker-compose -p {{ docker_compose_project }} -f {{ tempdir.path }}/{{ docker_compose_file_name }} up -d"
+      become: true
+
+  always:
+    - name: removing docker-compose.yml
+      file:
+        path: "{{ tempdir.path }}"
+        state: absent
+      become: true
+
+- name: prune images
+  command: docker image prune --all --force
+  become: true
+  when: docker_compose_prune_images
+
+- name: prune volumes
+  command: "docker volume prune --force {% if docker_compose_prune_volume_filter is defined %} --filter '{{ docker_compose_prune_volume_filter }}' {% endif %}"
+  become: true
+  when: docker_compose_prune_volumes

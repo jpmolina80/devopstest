@@ -64,7 +64,7 @@ This cluster is composed by 5 docker containers:
 
 by default, 2 sentinels servers need to agree about the fact the master is not reachable (REDIS_SENTINEL_QUORUM)
 
-# RabbitMQ cluster
+## RabbitMQ cluster
 
 This cluster is composed by 3 docker containers:
  - ansible_rabbit1_1: master server
